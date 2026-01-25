@@ -101,7 +101,7 @@ FORM display_alv_report.
       is_layout          = gd_layout
       it_fieldcat        = fieldcatalog[]
       it_sort            = it_sortinfo[]
-      i_save             = 'X'
+      i_save             = 'X'          "레이아웃 저장 기본값.
     TABLES
       t_outtab           = it_sflight
     EXCEPTIONS
@@ -137,12 +137,15 @@ FORM build_sortinfo.
   it_sortinfo-spos        = 1.
   it_sortinfo-fieldname   = 'CARRID'.
   it_sortinfo-up          = 'X'.  "오름차순
+  it_sortinfo-subtot      = 'X'.  "부분합
   APPEND it_sortinfo TO it_sortinfo.
   CLEAR  it_sortinfo.
 
   it_sortinfo-spos        = 2.
   it_sortinfo-fieldname   = 'CONNID'.
   it_sortinfo-down        = 'X'.  "내림차순
+  it_sortinfo-subtot      = 'X'.  "부분합
+"   it_sortinfo-expa        = 'X'.  "확장
   APPEND it_sortinfo TO it_sortinfo.
   CLEAR  it_sortinfo.
 ENDFORM.                    " BUILD_SORTINFO
