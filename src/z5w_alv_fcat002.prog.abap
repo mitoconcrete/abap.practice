@@ -69,7 +69,6 @@ FORM create_fieldcatalog.
   fieldcatalog-seltext_m   = 'Airline Code'.
   fieldcatalog-col_pos     = 0.
   fieldcatalog-key         = 'X'.
-  fieldcatalog-subtot      = 'X'.
   APPEND fieldcatalog TO fieldcatalogs.
   CLEAR  fieldcatalog.
 
@@ -79,7 +78,6 @@ FORM create_fieldcatalog.
   fieldcatalog-key         = 'X'.
   fieldcatalog-lzero       = 'X'.
   fieldcatalog-hotspot     = 'X'.
-  fieldcatalog-subtot      = 'X'.
   APPEND fieldcatalog TO fieldcatalogs.
   CLEAR  fieldcatalog.
 
