@@ -91,6 +91,7 @@ FORM create_fieldcatalog.
   fieldcatalog-fieldname   = 'PRICE'.
   fieldcatalog-seltext_m   = 'Airfare'.
   fieldcatalog-col_pos     = 3.
+  fieldcatalog-do_sum      = 'X'.
   APPEND fieldcatalog TO fieldcatalogs.
   CLEAR  fieldcatalog.
 
@@ -111,6 +112,7 @@ FORM create_fieldcatalog.
   fieldcatalog-fieldname   = 'SEATSMAX'.
   fieldcatalog-seltext_m   = 'Maximum Seats'.
   fieldcatalog-col_pos     = 6.
+  fieldcatalog-do_sum      = 'X'.
   APPEND fieldcatalog TO fieldcatalogs.
   CLEAR  fieldcatalog.
 
