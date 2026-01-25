@@ -99,7 +99,7 @@ FORM display_alv_report.
     EXPORTING
       i_callback_program = gd_repid
       is_layout          = gd_layout
-      it_fieldcat        = fieldcatalogs[]
+      it_fieldcat        = fieldcatalog[]
       it_sort            = it_sortinfo[]
       i_save             = 'X'
     TABLES
