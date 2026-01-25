@@ -44,18 +44,22 @@ FORM build_fieldcatalog.
   fieldcatalog-fieldname   = 'CARRID'.
   fieldcatalog-seltext_m   = '항공사 코드'.
   fieldcatalog-col_pos     = 0.
+  fieldcatalog-key         = 'X'.
   APPEND fieldcatalog TO fieldcatalog.
   CLEAR  fieldcatalog.
 
   fieldcatalog-fieldname   = 'CONNID'.
   fieldcatalog-seltext_m   = '항공편 번호'.
   fieldcatalog-col_pos     = 1.
+  fieldcatalog-key         = 'X'.
+  fieldcatalog-lzero       = 'X'.
   APPEND fieldcatalog TO fieldcatalog.
   CLEAR  fieldcatalog.
 
   fieldcatalog-fieldname   = 'SEATSMAX'.
   fieldcatalog-seltext_m   = '좌석 수'.
   fieldcatalog-col_pos     = 2.
+  fieldcatalog-emphasize   = 'X'.
   APPEND fieldcatalog TO fieldcatalog.
   CLEAR  fieldcatalog.
 
