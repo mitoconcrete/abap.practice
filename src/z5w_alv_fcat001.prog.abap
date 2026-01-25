@@ -53,6 +53,7 @@ FORM build_fieldcatalog.
   fieldcatalog-col_pos     = 1.
   fieldcatalog-key         = 'X'.
   fieldcatalog-lzero       = 'X'.
+  fieldcatalog-just        = 'L'.
   APPEND fieldcatalog TO fieldcatalog.
   CLEAR  fieldcatalog.
 
