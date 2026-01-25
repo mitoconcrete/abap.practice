@@ -75,12 +75,14 @@ FORM create_fieldcatalog.
   fieldcatalog-fieldname   = 'CONNID'.
   fieldcatalog-seltext_m   = 'Flight Connection Number'.
   fieldcatalog-col_pos     = 1.
+  fieldcatalog-lzero       = 'X'.
   APPEND fieldcatalog TO fieldcatalogs.
   CLEAR  fieldcatalog.
 
   fieldcatalog-fieldname   = 'FLTIME'.
   fieldcatalog-seltext_m   = 'Flight Time'.
   fieldcatalog-col_pos     = 2.
+  fieldcatalog-edit_mask   = '________'.
   APPEND fieldcatalog TO fieldcatalogs.
   CLEAR  fieldcatalog.
 
@@ -99,6 +101,7 @@ FORM create_fieldcatalog.
   fieldcatalog-fieldname   = 'DISTANCE'.
   fieldcatalog-seltext_m   = 'Distance'.
   fieldcatalog-col_pos     = 5.
+  fieldcatalog-decimals_out = 0.
   APPEND fieldcatalog TO fieldcatalogs.
   CLEAR  fieldcatalog.
 
