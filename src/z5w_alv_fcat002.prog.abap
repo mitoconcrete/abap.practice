@@ -26,8 +26,8 @@ DATA: table_sflight TYPE TABLE OF type_sflight INITIAL SIZE 0.
 *ALV data declarations
 DATA: fieldcatalog   TYPE slis_fieldcat_alv,
       fieldcatalogs  TYPE slis_t_fieldcat_alv,
-      sortinfo       TYPE slis_fieldcat_alv,
-      sortinfos      TYPE slis_t_fieldcat_alv,
+      sortinfo       TYPE slis_sortinfo_alv,
+      sortinfos      TYPE slis_t_sortinfo_alv,
       grid_layout    TYPE slis_layout_alv,
       grid_repid     LIKE sy-repid.
       
@@ -168,7 +168,7 @@ FORM display_alv_report.
       i_callback_program = grid_repid
       is_layout          = grid_layout
       it_fieldcat        = fieldcatalogs[]
-      it_sort            = grid_sortinfo[]
+      it_sort            = sortinfos[]
       i_save             = 'X'
     TABLES
       t_outtab           = table_sflight
