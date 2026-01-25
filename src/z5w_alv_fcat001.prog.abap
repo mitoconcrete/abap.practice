@@ -54,13 +54,16 @@ FORM build_fieldcatalog.
   fieldcatalog-key         = 'X'.
   fieldcatalog-lzero       = 'X'.
   fieldcatalog-just        = 'L'.
+  fieldcatalog-hotspot     = 'X'.
   APPEND fieldcatalog TO fieldcatalog.
   CLEAR  fieldcatalog.
 
   fieldcatalog-fieldname   = 'SEATSMAX'.
   fieldcatalog-seltext_m   = '좌석 수'.
   fieldcatalog-col_pos     = 2.
-  fieldcatalog-emphasize   = 'X'.
+  fieldcatalog-emphasize   = 'C310'.
+  fieldcatalog-do_sum      = 'X'.
+"   fieldcatalog-edit        = 'X'.
   APPEND fieldcatalog TO fieldcatalog.
   CLEAR  fieldcatalog.
 
@@ -77,6 +80,7 @@ FORM build_layout.
   gd_layout-no_input          = 'X'.
   gd_layout-colwidth_optimize = 'X'.
   gd_layout-zebra = 'X'.
+  gd_layout-totals_before_items = 'X'.
 
 ENDFORM.                    " BUILD_LAYOUT
 
