@@ -24,6 +24,8 @@ DATA: fieldcatalog TYPE slis_t_fieldcat_alv WITH HEADER LINE,
       gd_layout    TYPE slis_layout_alv,
       gd_repid     LIKE sy-repid.
 
+DATA: it_sortinfo TYPE slis_t_sortinfo_alv WITH HEADER LINE.
+
 ************************************************************************
 *Start-of-selection.
 START-OF-SELECTION.
@@ -31,6 +33,7 @@ START-OF-SELECTION.
   PERFORM data_retrieval.
   PERFORM build_fieldcatalog.
   PERFORM build_layout.
+  PERFORM build_sortinfo.
   PERFORM display_alv_report.
 
 
@@ -96,7 +99,8 @@ FORM display_alv_report.
     EXPORTING
       i_callback_program = gd_repid
       is_layout          = gd_layout
-      it_fieldcat        = fieldcatalog[]
+      it_fieldcat        = fieldcatalogs[]
+      it_sort            = it_sortinfo[]
       i_save             = 'X'
     TABLES
       t_outtab           = it_sflight
@@ -123,3 +127,22 @@ FORM data_retrieval.
     INTO TABLE it_sflight.
 
 ENDFORM.                    " DATA_RETRIEVAL
+
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_SORTINFO
+*&---------------------------------------------------------------------*
+*       Build sortinfo for ALV Report
+*----------------------------------------------------------------------*
+FORM build_sortinfo.
+  it_sortinfo-spos        = 1.
+  it_sortinfo-fieldname   = 'CARRID'.
+  it_sortinfo-up          = 'X'.  "오름차순
+  APPEND it_sortinfo TO it_sortinfo.
+  CLEAR  it_sortinfo.
+
+  it_sortinfo-spos        = 2.
+  it_sortinfo-fieldname   = 'CONNID'.
+  it_sortinfo-down        = 'X'.  "내림차순
+  APPEND it_sortinfo TO it_sortinfo.
+  CLEAR  it_sortinfo.
+ENDFORM.                    " BUILD_SORTINFO
