@@ -30,7 +30,7 @@ DATA: fieldcatalog   TYPE slis_fieldcat_alv,
       sortinfos      TYPE slis_t_sortinfo_alv,
       grid_layout    TYPE slis_layout_alv,
       grid_repid     LIKE sy-repid.
-      
+
 
 ************************************************************************
 *Start-of-selection.
