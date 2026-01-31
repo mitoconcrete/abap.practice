@@ -11,9 +11,45 @@
    </PROGDIR>
    <TPOOL>
     <item>
+     <ID>I</ID>
+     <KEY>001</KEY>
+     <ENTRY>항공사 정보조회</ENTRY>
+     <LENGTH>18</LENGTH>
+    </item>
+    <item>
      <ID>R</ID>
      <ENTRY>Report Z7W_SEL_ALV001</ENTRY>
      <LENGTH>21</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>NUM</KEY>
+     <ENTRY>Maximun No. of Hits</ENTRY>
+     <LENGTH>27</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>S_CARRID</KEY>
+     <ENTRY>CARRID</ENTRY>
+     <LENGTH>14</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>S_CCODE</KEY>
+     <ENTRY>CURRCODE</ENTRY>
+     <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>S_CNAME</KEY>
+     <ENTRY>CURRNAME</ENTRY>
+     <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>S_URL</KEY>
+     <ENTRY>URL</ENTRY>
+     <LENGTH>11</LENGTH>
     </item>
    </TPOOL>
   </asx:values>

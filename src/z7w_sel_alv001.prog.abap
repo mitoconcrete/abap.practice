@@ -32,9 +32,21 @@ DATA: fieldcatalog TYPE slis_t_fieldcat_alv WITH HEADER LINE,
 DATA : t TYPE slis_t_sp_group_alv .
 ************************************************************************
 *Start-of-selection.
-SELECTION-SCREEN BEGIN OF BLOCK part1 WITH FRAME TITLE text-001.
-SELECT-OPTIONS s_scarr FOR scarr-carrid.
-SELECTION-SCREEN END OF BLOCK part1.
+* SELECTION-SCREEN BEGIN OF BLOCK part1 WITH FRAME TITLE text-001.
+* SELECT-OPTIONS s_scarr FOR scarr-carrid.
+* PARAMETERS s_scarr TYPE scarr-carrid OBLIGATORY DEFAULT 'AA'.
+* SELECTION-SCREEN END OF BLOCK part1.
+
+SELECTION-SCREEN BEGIN OF BLOCK part2 WITH FRAME TITLE text-002.
+SELECT-OPTIONS s_carrid FOR scarr-carrid.
+SELECTION-SCREEN SKIP.
+SELECT-OPTIONS s_cname FOR scarr-carrname.
+SELECT-OPTIONS s_ccode FOR scarr-currcode.
+SELECT-OPTIONS s_url FOR scarr-url.
+SELECTION-SCREEN SKIP.
+PARAMETERS num TYPE i.
+SELECTION-SCREEN END OF BLOCK part2.
+
 
 START-OF-SELECTION.
   PERFORM data_retrieval.
@@ -133,7 +145,13 @@ ENDFORM.                    " DISPLAY_ALV_REPORT
 
 FORM data_retrieval.
   SELECT mandt carrid carrname currcode url
+    UP TO num ROWS
     FROM scarr
     INTO TABLE it_scarr
-    WHERE carrid IN s_scarr.
+*    WHERE carrid = s_scarr.
+*    WHERE carrid IN s_scarr
+    WHERE carrid IN s_carrid
+    AND carrname IN s_cname
+    AND currcode IN s_ccode
+    AND url IN s_url.
 ENDFORM.                    " DATA_RETRIEVAL
