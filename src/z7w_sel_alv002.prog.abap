@@ -36,7 +36,7 @@ DATA : t TYPE slis_t_sp_group_alv .
 *Start-of-selection.
 
 SELECTION-SCREEN BEGIN OF BLOCK part2 WITH FRAME TITLE text-001.
-SELECT-OPTIONS s_carrid FOR sflight-carrid OBLIGATORY DEFAULT 'AA' TO 'ZZ'.
+SELECT-OPTIONS s_carrid FOR sflight-carrid OBLIGATORY.
 SELECT-OPTIONS s_connid FOR sflight-connid.
 SELECT-OPTIONS s_fldate FOR sflight-fldate.
 SELECTION-SCREEN SKIP.
@@ -47,6 +47,35 @@ SELECT-OPTIONS s_seats FOR sflight-seatsmax.
 SELECTION-SCREEN SKIP.
 PARAMETERS num TYPE i DEFAULT 100.
 SELECTION-SCREEN END OF BLOCK part2.
+
+INITIALIZATION.
+   s_carrid-SIGN = 'I'.
+   s_carrid-OPTION = 'EQ'.
+   s_carrid-LOW = 'AA'.
+   s_carrid-HIGH = ''.
+   APPEND s_carrid.
+   CLEAR s_carrid.
+
+   s_carrid-SIGN = 'I'.
+   s_carrid-OPTION = 'BT'.
+   s_carrid-LOW = 'AB'.
+   s_carrid-HIGH = 'ZZ'.
+   APPEND s_carrid.
+   CLEAR s_carrid.
+
+   s_carrid-SIGN = 'E'.
+   s_carrid-OPTION = 'EQ'.
+   s_carrid-LOW = 'AB'.
+   s_carrid-HIGH = ''.
+   APPEND s_carrid.
+   CLEAR s_carrid.
+
+   s_carrid-SIGN = 'E'.
+   s_carrid-OPTION = 'BT'.
+   s_carrid-LOW = 'AC'.
+   s_carrid-HIGH = 'AF'.
+   APPEND s_carrid.
+   CLEAR s_carrid.
 
 
 START-OF-SELECTION.
