@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DTEL" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD04V>
+    <ROLLNAME>ZCARRID</ROLLNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DOMNAME>ZDSCARRID</DOMNAME>
+    <MEMORYID>CAR</MEMORYID>
+    <HEADLEN>02</HEADLEN>
+    <SCRLEN1>02</SCRLEN1>
+    <SCRLEN2>03</SCRLEN2>
+    <SCRLEN3>05</SCRLEN3>
+    <DDTEXT>항공사 코드</DDTEXT>
+    <REPTEXT>ID</REPTEXT>
+    <SCRTEXT_S>코드</SCRTEXT_S>
+    <SCRTEXT_M>항공사</SCRTEXT_M>
+    <SCRTEXT_L>항공사코드</SCRTEXT_L>
+    <DTELMASTER>E</DTELMASTER>
+    <SHLPNAME>S_CARRIER_ID</SHLPNAME>
+    <SHLPFIELD>CARRID</SHLPFIELD>
+    <DEFFDNAME>AIRLINEID</DEFFDNAME>
+    <REFKIND>D</REFKIND>
+   </DD04V>
+  </asx:values>
+ </asx:abap>
+</abapGit>
