@@ -352,38 +352,221 @@ ENDFORM.
 *    MESSAGE '엑셀다운에러' TYPE 'S'.
 *  ENDIF.
 *ENDFORM.
-FORM download_excel_smpl USING p_ls_key_objid.
+FORM download_excel_smpl USING p_fname.
 
-  " 1. 헤더 데이터 준비 (탭 구분 텍스트)
-  DATA: lt_data TYPE TABLE OF string,
-        lv_line TYPE string.
+  DATA: lo_excel       TYPE REF TO zcl_excel,
+        lo_worksheet   TYPE REF TO zcl_excel_worksheet,
+        lo_worksheet2  TYPE REF TO zcl_excel_worksheet,
+        lo_writer      TYPE REF TO zif_excel_writer,
+        lo_style_hdr   TYPE REF TO zcl_excel_style,
+        lo_style_none  TYPE REF TO zcl_excel_style,
+        lv_xstring     TYPE xstring,
+        lv_size        TYPE i,
+        lt_binary      TYPE solix_tab,
+        lv_filename    TYPE string,
+        lv_path        TYPE string,
+        lv_fullpath    TYPE string,
+        lv_action      TYPE i,
+        lt_spfli       TYPE TABLE OF spfli.
 
-  CONCATENATE 'MANDT' 'CARRID' 'CARRNAME' 'CURRCODE' 'URL'
-    INTO lv_line SEPARATED BY cl_abap_char_utilities=>horizontal_tab.
-  APPEND lv_line TO lt_data.
+TRY.
+    SELECT * FROM spfli INTO TABLE lt_spfli.
 
-  " 2. 파일 경로 조립 (OS에 맞는 구분자 자동 사용)
-  DATA: lv_sep TYPE c.
-  cl_gui_frontend_services=>get_file_separator(
-    CHANGING file_separator = lv_sep ).
+    CREATE OBJECT lo_excel.
+    lo_worksheet = lo_excel->get_active_worksheet( ).
+    lo_worksheet->set_title( ip_title = 'SPFLI' ).
 
-  CONCATENATE gv_directory lv_sep p_ls_key_objid '.xls' INTO gv_path.
+    " === 헤더 스타일 ===
+    lo_style_hdr = lo_excel->add_new_style( ).
+    lo_style_hdr->fill->filltype        = zcl_excel_style_fill=>c_fill_solid.
+    lo_style_hdr->fill->fgcolor-rgb     = 'FFFFFF00'.
+    lo_style_hdr->alignment->horizontal = zcl_excel_style_alignment=>c_horizontal_center.
+    lo_style_hdr->alignment->vertical   = zcl_excel_style_alignment=>c_vertical_center.
 
-  " 3. 다운로드 (OLE 불필요)
+    " ★ borders 자체 인스턴스화 (혹시 모를 경우 대비)
+    IF lo_style_hdr->borders IS NOT BOUND.
+      CREATE OBJECT lo_style_hdr->borders.
+    ENDIF.
+
+    " ★ 4면 객체 명시적 생성 후 스타일 설정
+    IF lo_style_hdr->borders->left IS NOT BOUND.
+      CREATE OBJECT lo_style_hdr->borders->left.
+    ENDIF.
+    lo_style_hdr->borders->left->border_style = zcl_excel_style_border=>c_border_thin.
+
+    IF lo_style_hdr->borders->right IS NOT BOUND.
+      CREATE OBJECT lo_style_hdr->borders->right.
+    ENDIF.
+    lo_style_hdr->borders->right->border_style = zcl_excel_style_border=>c_border_thin.
+
+    IF lo_style_hdr->borders->top IS NOT BOUND.
+      CREATE OBJECT lo_style_hdr->borders->top.
+    ENDIF.
+    lo_style_hdr->borders->top->border_style = zcl_excel_style_border=>c_border_thin.
+
+    IF lo_style_hdr->borders->down IS NOT BOUND.
+      CREATE OBJECT lo_style_hdr->borders->down.
+    ENDIF.
+    lo_style_hdr->borders->down->border_style = zcl_excel_style_border=>c_border_thin.
+
+    " === 데이터 스타일 ===
+    DATA: lo_style_data TYPE REF TO zcl_excel_style.
+    lo_style_data = lo_excel->add_new_style( ).
+
+    IF lo_style_data->borders IS NOT BOUND.
+      CREATE OBJECT lo_style_data->borders.
+    ENDIF.
+
+    IF lo_style_data->borders->left IS NOT BOUND.
+      CREATE OBJECT lo_style_data->borders->left.
+    ENDIF.
+    lo_style_data->borders->left->border_style = zcl_excel_style_border=>c_border_thin.
+
+    IF lo_style_data->borders->right IS NOT BOUND.
+      CREATE OBJECT lo_style_data->borders->right.
+    ENDIF.
+    lo_style_data->borders->right->border_style = zcl_excel_style_border=>c_border_thin.
+
+    IF lo_style_data->borders->top IS NOT BOUND.
+      CREATE OBJECT lo_style_data->borders->top.
+    ENDIF.
+    lo_style_data->borders->top->border_style = zcl_excel_style_border=>c_border_thin.
+
+    IF lo_style_data->borders->down IS NOT BOUND.
+      CREATE OBJECT lo_style_data->borders->down.
+    ENDIF.
+    lo_style_data->borders->down->border_style = zcl_excel_style_border=>c_border_thin.
+
+    " === 헤더 입력 ===
+    PERFORM fill_cell USING lo_worksheet 1: 1  'MANDT'       lo_style_hdr,
+                                            2  'CARRID'      lo_style_hdr,
+                                            3  'CONNID'      lo_style_hdr,
+                                            4  'COUNTRYFR'   lo_style_hdr,
+                                            5  'CITYFROM'    lo_style_hdr,
+                                            6  'AIRPFROM'    lo_style_hdr,
+                                            7  'COUNTRYTO'   lo_style_hdr,
+                                            8  'CITYTO'      lo_style_hdr,
+                                            9  'AIRPTO'      lo_style_hdr,
+                                            10 'FLTIME'      lo_style_hdr,
+                                            11 'DEPTIME'     lo_style_hdr,
+                                            12 'ARRTIME'     lo_style_hdr,
+                                            13 'DISTANCE'    lo_style_hdr,
+                                            14 'DISTID'      lo_style_hdr,
+                                            15 'FLTYPE'      lo_style_hdr,
+                                            16 'PERIOD'      lo_style_hdr.
+
+    " === 데이터 입력 ===
+    DATA: lv_row TYPE i VALUE 2.
+    FIELD-SYMBOLS: <fs_spfli> LIKE LINE OF lt_spfli.
+
+    LOOP AT lt_spfli ASSIGNING <fs_spfli>.
+      PERFORM fill_cell USING lo_worksheet lv_row: 1 <fs_spfli>-mandt     lo_style_data,
+                                                   2 <fs_spfli>-carrid    lo_style_data,
+                                                   3 <fs_spfli>-connid    lo_style_data,
+                                                   4 <fs_spfli>-countryfr lo_style_data,
+                                                   5 <fs_spfli>-cityfrom  lo_style_data,
+                                                   6 <fs_spfli>-airpfrom  lo_style_data,
+                                                   7 <fs_spfli>-countryto lo_style_data,
+                                                   8 <fs_spfli>-cityto    lo_style_data,
+                                                   9 <fs_spfli>-airpto    lo_style_data,
+                                                   10 <fs_spfli>-fltime   lo_style_data,
+                                                   11 <fs_spfli>-deptime  lo_style_data,
+                                                   12 <fs_spfli>-arrtime  lo_style_data,
+                                                   13 <fs_spfli>-distance lo_style_data,
+                                                   14 <fs_spfli>-distid   lo_style_data,
+                                                   15 <fs_spfli>-fltype   lo_style_data,
+                                                   16 <fs_spfli>-period   lo_style_data.
+      lv_row = lv_row + 1.
+    ENDLOOP.
+
+    " === 컬럼 너비 ===
+    PERFORM column_width USING lo_worksheet 1  10.
+    PERFORM column_width USING lo_worksheet 2  10.
+    PERFORM column_width USING lo_worksheet 3  20.
+    PERFORM column_width USING lo_worksheet 4  20.
+    PERFORM column_width USING lo_worksheet 5  20.
+    PERFORM column_width USING lo_worksheet 6  20.
+    PERFORM column_width USING lo_worksheet 7  20.
+    PERFORM column_width USING lo_worksheet 8  20.
+    PERFORM column_width USING lo_worksheet 9  20.
+    PERFORM column_width USING lo_worksheet 10 20.
+    PERFORM column_width USING lo_worksheet 11 20.
+    PERFORM column_width USING lo_worksheet 12 20.
+    PERFORM column_width USING lo_worksheet 13 20.
+    PERFORM column_width USING lo_worksheet 14 20.
+    PERFORM column_width USING lo_worksheet 15 20.
+    PERFORM column_width USING lo_worksheet 16 20.
+
+
+
+
+    " === 두 번째 시트 ===
+    lo_worksheet2 = lo_excel->add_new_worksheet( ).
+    lo_worksheet2->set_title( ip_title = 'SPFLI2' ).
+
+    CREATE OBJECT lo_writer TYPE zcl_excel_writer_2007.
+    lv_xstring = lo_writer->write_file( lo_excel ).
+
+  CATCH zcx_excel INTO DATA(lo_excel_err).
+    MESSAGE e398(00) WITH '엑셀 생성 실패:' lo_excel_err->get_text( ) '' ''.
+    RETURN.
+ENDTRY.
+
+  " 9. xstring → solix_tab 변환
+  CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
+    EXPORTING
+      buffer        = lv_xstring
+    IMPORTING
+      output_length = lv_size
+    TABLES
+      binary_tab    = lt_binary.
+
+  " 10. 저장 다이얼로그 (OS 독립)
+  cl_gui_frontend_services=>file_save_dialog(
+    EXPORTING
+      window_title         = '엑셀 다운로드'
+      default_extension    = 'xlsx'
+      default_file_name    = |{ p_fname }.xlsx|
+      file_filter          = |Excel Files (*.xlsx)\|*.xlsx\|All Files (*.*)\|*.*|
+    CHANGING
+      filename             = lv_filename
+      path                 = lv_path
+      fullpath             = lv_fullpath
+      user_action          = lv_action
+    EXCEPTIONS
+      cntl_error           = 1
+      error_no_gui         = 2
+      not_supported_by_gui = 3
+      OTHERS               = 4 ).
+
+  " 사용자가 취소했거나 에러 발생 시 종료
+  IF sy-subrc <> 0
+     OR lv_action <> cl_gui_frontend_services=>action_ok.
+    RETURN.
+  ENDIF.
+
+  gv_path = lv_fullpath.
+
+  " 11. 파일 다운로드
   cl_gui_frontend_services=>gui_download(
     EXPORTING
-      filename                = gv_path
-      filetype                = 'ASC'
-      write_field_separator   = 'X'
+      bin_filesize     = lv_size
+      filename         = lv_fullpath
+      filetype         = 'BIN'
     CHANGING
-      data_tab                = lt_data
+      data_tab         = lt_binary
     EXCEPTIONS
-      OTHERS                  = 1 ).
+      file_write_error = 1
+      no_authority     = 5
+      access_denied    = 15
+      file_not_found   = 19
+      OTHERS           = 99 ).
 
+  " 12. 결과 메시지
   IF sy-subrc = 0.
-    MESSAGE '엑셀정상다운' TYPE 'S'.
+    MESSAGE s398(00) WITH '엑셀이 정상 다운로드되었습니다' '' '' ''.
   ELSE.
-    MESSAGE '엑셀다운에러' TYPE 'E'.
+    MESSAGE e398(00) WITH '엑셀 다운로드 실패' '' '' ''.
   ENDIF.
 
 ENDFORM.
@@ -397,20 +580,20 @@ ENDFORM.
 *&      --> P_01
 *&      --> P_
 *&---------------------------------------------------------------------*
-FORM FILL_CELL  USING    PV_APPLICATION
-                         PV_ROW
-                         PV_COL
-                         PV_VALUE.
-
-  DATA: LV_ECELL TYPE OLE2_OBJECT.
-
-  CALL METHOD OF PV_APPLICATION 'Cells' = LV_ECELL
-    EXPORTING
-      #1 = PV_ROW
-      #2 = PV_COL.
-
-  SET PROPERTY OF LV_ECELL 'Value' = PV_VALUE.
-ENDFORM.
+*FORM FILL_CELL  USING    PV_APPLICATION
+*                         PV_ROW
+*                         PV_COL
+*                         PV_VALUE.
+*
+*  DATA: LV_ECELL TYPE OLE2_OBJECT.
+*
+*  CALL METHOD OF PV_APPLICATION 'Cells' = LV_ECELL
+*    EXPORTING
+*      #1 = PV_ROW
+*      #2 = PV_COL.
+*
+*  SET PROPERTY OF LV_ECELL 'Value' = PV_VALUE.
+*ENDFORM.
 *&---------------------------------------------------------------------*
 *& Form GET_NEEDED_DATA
 *&---------------------------------------------------------------------*
@@ -913,4 +1096,71 @@ FORM popup_confirm USING p_button CHANGING p_confirm.     "POPUP 함수
       display_cancel_button = space
     IMPORTING
       answer                = p_confirm. "1:Continew / 2:Cancel
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form FILL_CELL
+*&---------------------------------------------------------------------*
+*& abap2xlsx용 셀 입력 헬퍼
+*&---------------------------------------------------------------------*
+*&      --> P_WORKSHEET  대상 워크시트
+*&      --> P_ROW        행 번호 (1부터 시작)
+*&      --> P_COL        컬럼 번호 (1=A, 2=B, ...)
+*&      --> P_VALUE      입력 값
+*&      --> P_STYLE      스타일 객체 (없으면 빈 참조)
+*&---------------------------------------------------------------------*
+FORM fill_cell USING p_worksheet TYPE REF TO zcl_excel_worksheet
+                     p_row       TYPE i
+                     p_col       TYPE i
+                     p_value     TYPE any
+                     p_style     TYPE REF TO zcl_excel_style.
+
+  DATA: lv_col_letter TYPE string.
+
+  TRY.
+      " 컬럼 번호 → 문자 변환 (1 → 'A', 2 → 'B', ...)
+      lv_col_letter = zcl_excel_common=>convert_column2alpha( ip_column = p_col ).
+
+      " 스타일 유무에 따라 분기
+      IF p_style IS BOUND.
+        p_worksheet->set_cell( ip_column = lv_col_letter
+                               ip_row    = p_row
+                               ip_value  = p_value
+                               ip_style  = p_style ).
+      ELSE.
+        p_worksheet->set_cell( ip_column = lv_col_letter
+                               ip_row    = p_row
+                               ip_value  = p_value ).
+      ENDIF.
+
+    CATCH zcx_excel.
+      " 무시 또는 로깅
+  ENDTRY.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form COLUMN_WIDTH
+*&---------------------------------------------------------------------*
+*& abap2xlsx용 컬럼 너비 설정 헬퍼
+*&---------------------------------------------------------------------*
+*&      --> P_WORKSHEET  대상 워크시트
+*&      --> P_COLUMN     컬럼 번호 (1, 2, 3, ...)
+*&      --> P_WIDTH      너비
+*&---------------------------------------------------------------------*
+FORM column_width USING p_worksheet TYPE REF TO zcl_excel_worksheet
+                        p_column    TYPE i
+                        p_width     TYPE i.
+
+  DATA: lv_col_letter TYPE string.
+
+  TRY.
+      " 컬럼 번호 → 문자 변환
+      lv_col_letter = zcl_excel_common=>convert_column2alpha( ip_column = p_column ).
+
+      " 너비 설정
+      p_worksheet->get_column( ip_column = lv_col_letter )->set_width( ip_width = p_width ).
+
+    CATCH zcx_excel.
+      " 무시 또는 로깅
+  ENDTRY.
+
 ENDFORM.
