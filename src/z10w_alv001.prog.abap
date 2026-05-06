@@ -188,13 +188,24 @@ FORM data_retrieval.
 *    WHERE a~carrid IN @s_carrid
 *    INTO TABLE @gt_table.
 
+*    SELECT a~carrid, a~carrname, b~connid, b~cityfrom, b~cityto, c~fldate, d~bookid
+*    FROM scarr AS a
+*    JOIN spfli AS b
+*    ON a~carrid = b~carrid
+*    JOIN sflight AS c
+*    ON a~carrid = c~carrid AND b~connid = c~connid
+*    JOIN sbook AS d
+*    ON c~carrid = d~carrid AND c~connid = d~connid AND c~fldate = d~fldate
+*    WHERE a~carrid IN @s_carrid
+*    INTO TABLE @gt_table.
+
     SELECT a~carrid, a~carrname, b~connid, b~cityfrom, b~cityto, c~fldate, d~bookid
     FROM scarr AS a
-    JOIN spfli AS b
+    LEFT JOIN spfli AS b
     ON a~carrid = b~carrid
-    JOIN sflight AS c
+    LEFT JOIN sflight AS c
     ON a~carrid = c~carrid AND b~connid = c~connid
-    JOIN sbook AS d
+    LEFT JOIN sbook AS d
     ON c~carrid = d~carrid AND c~connid = d~connid AND c~fldate = d~fldate
     WHERE a~carrid IN @s_carrid
     INTO TABLE @gt_table.

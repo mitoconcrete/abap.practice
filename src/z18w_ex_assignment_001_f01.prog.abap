@@ -261,7 +261,7 @@ FORM excel_down_smpl .
 *    LS_KEY-RELID = 'MI'.
 *
   DATA: FNAME TYPE WWWDATATAB-OBJID.
-  FNAME = 'ZTEST14_EXCEL01'.
+  FNAME = 'STRAVELAG_EXCEL01'.
 * 파일 경로 조회
 *  PERFORM SET_DIRECTORY USING LS_KEY-OBJID.
   PERFORM SET_DIRECTORY.
@@ -367,14 +367,14 @@ FORM download_excel_smpl USING p_fname.
         lv_path        TYPE string,
         lv_fullpath    TYPE string,
         lv_action      TYPE i,
-        lt_scarr       TYPE TABLE OF scarr.
+        lt_stravelag       TYPE TABLE OF stravelag.
 
 TRY.
-    SELECT * FROM scarr INTO TABLE lt_scarr.
+    SELECT * FROM stravelag INTO TABLE lt_stravelag .
 
     CREATE OBJECT lo_excel.
     lo_worksheet = lo_excel->get_active_worksheet( ).
-    lo_worksheet->set_title( ip_title = 'ZSCARR' ).
+    lo_worksheet->set_title( ip_title = 'STRAVELAG' ).
 
     " === 헤더 스타일 ===
     lo_style_hdr = lo_excel->add_new_style( ).
@@ -457,34 +457,50 @@ TRY.
     lo_worksheet->set_cell(
       ip_column = 'A'
       ip_row    = 1
-      ip_value  = 'SCARR 테이블 엑셀 샘플양식'
+      ip_value  = 'STRAVELAG 테이블 엑셀 샘플양식'
       ip_style  = lo_style_title->get_guid( ) ).
 
     lo_worksheet->set_merge(
       ip_column_start = 'A'
-      ip_column_end   = 'E'
+      ip_column_end   = 'M'
       ip_row          = 1 ).
 
     " 제목 행 높이 키우기 (선택)
     lo_worksheet->get_row( ip_row = 1 )->set_row_height( ip_row_height = 30 ).
 
     " === 헤더 입력 (2행으로 이동) ===
-    PERFORM fill_cell USING lo_worksheet 3: 1 'MANDT'    lo_style_hdr,
-                                            2 'CARRID'   lo_style_hdr,
-                                            3 'CARRNAME' lo_style_hdr,
-                                            4 'CURRCODE' lo_style_hdr,
-                                            5 'URL'      lo_style_hdr.
+    PERFORM fill_cell USING lo_worksheet 3: 1  'MANDT'       lo_style_hdr,
+                                            2  'AGENCYNUM'   lo_style_hdr,
+                                            3  'NAME'        lo_style_hdr,
+                                            4  'STREET'      lo_style_hdr,
+                                            5  'POSTBOX'     lo_style_hdr,
+                                            6  'POSTCODE'    lo_style_hdr,
+                                            7  'CITY'        lo_style_hdr,
+                                            8  'COUNTRY'     lo_style_hdr,
+                                            9  'REGION'      lo_style_hdr,
+                                            10 'TELEPHONE'   lo_style_hdr,
+                                            11 'URL'         lo_style_hdr,
+                                            12 'LANGU'       lo_style_hdr,
+                                            13 'CURRENCY'    lo_style_hdr.
 
     " === 데이터 입력 (3행부터) ===
     DATA: lv_row TYPE i VALUE 4.
-    FIELD-SYMBOLS: <fs_scarr> LIKE LINE OF lt_scarr.
+    FIELD-SYMBOLS: <fs_stravelag> LIKE LINE OF lt_stravelag.
 
-    LOOP AT lt_scarr ASSIGNING <fs_scarr>.
-      PERFORM fill_cell USING lo_worksheet lv_row: 1 <fs_scarr>-mandt    lo_style_data,
-                                                   2 <fs_scarr>-carrid   lo_style_data,
-                                                   3 <fs_scarr>-carrname lo_style_data,
-                                                   4 <fs_scarr>-currcode lo_style_data,
-                                                   5 <fs_scarr>-url      lo_style_data.
+    LOOP AT lt_stravelag ASSIGNING <fs_stravelag>.
+      PERFORM fill_cell USING lo_worksheet lv_row: 1  <fs_stravelag>-mandt       lo_style_data,
+                                                   2  <fs_stravelag>-agencynum   lo_style_data,
+                                                   3  <fs_stravelag>-name        lo_style_data,
+                                                   4  <fs_stravelag>-street      lo_style_data,
+                                                   5  <fs_stravelag>-postbox     lo_style_data,
+                                                   6  <fs_stravelag>-postcode    lo_style_data,
+                                                   7  <fs_stravelag>-city        lo_style_data,
+                                                   8  <fs_stravelag>-country     lo_style_data,
+                                                   9  <fs_stravelag>-region      lo_style_data,
+                                                   10 <fs_stravelag>-telephone   lo_style_data,
+                                                   11 <fs_stravelag>-url         lo_style_data,
+                                                   12 <fs_stravelag>-langu       lo_style_data,
+                                                   13 <fs_stravelag>-currency    lo_style_data.
       lv_row = lv_row + 1.
     ENDLOOP.
 
@@ -498,30 +514,54 @@ TRY.
   DATA: lt_widths TYPE TABLE OF i WITH DEFAULT KEY.
 
   " 1) 헤더 길이로 초기화
-  APPEND strlen( 'MANDT' )    TO lt_widths.
-  APPEND strlen( 'CARRID' )   TO lt_widths.
-  APPEND strlen( 'CARRNAME' ) TO lt_widths.
-  APPEND strlen( 'CURRCODE' ) TO lt_widths.
-  APPEND strlen( 'URL' )      TO lt_widths.
+  APPEND strlen( 'MANDT' )       TO lt_widths.
+  APPEND strlen( 'AGENCYNUM' )   TO lt_widths.
+  APPEND strlen( 'NAME' )        TO lt_widths.
+  APPEND strlen( 'STREET' )      TO lt_widths.
+  APPEND strlen( 'POSTBOX' )     TO lt_widths.
+  APPEND strlen( 'POSTCODE' )    TO lt_widths.
+  APPEND strlen( 'CITY' )        TO lt_widths.
+  APPEND strlen( 'COUNTRY' )     TO lt_widths.
+  APPEND strlen( 'REGION' )      TO lt_widths.
+  APPEND strlen( 'TELEPHONE' )   TO lt_widths.
+  APPEND strlen( 'URL' )         TO lt_widths.
+  APPEND strlen( 'LANGU' )       TO lt_widths.
+  APPEND strlen( 'CURRENCY' )    TO lt_widths.
 
   " 2) 데이터를 돌면서 최대 길이 갱신
   FIELD-SYMBOLS: <fs_w> TYPE i.
-  LOOP AT lt_scarr ASSIGNING <fs_scarr>.
+  LOOP AT lt_stravelag ASSIGNING <fs_stravelag>.
     READ TABLE lt_widths INDEX 1 ASSIGNING <fs_w>.
-    IF strlen( <fs_scarr>-mandt )    > <fs_w>. <fs_w> = strlen( <fs_scarr>-mandt ).    ENDIF.
+    IF strlen( <fs_stravelag>-mandt )    > <fs_w>. <fs_w> = strlen( <fs_stravelag>-mandt ).    ENDIF.
     READ TABLE lt_widths INDEX 2 ASSIGNING <fs_w>.
-    IF strlen( <fs_scarr>-carrid )   > <fs_w>. <fs_w> = strlen( <fs_scarr>-carrid ).   ENDIF.
+    IF strlen( <fs_stravelag>-agencynum )   > <fs_w>. <fs_w> = strlen( <fs_stravelag>-agencynum ).   ENDIF.
     READ TABLE lt_widths INDEX 3 ASSIGNING <fs_w>.
-    IF strlen( <fs_scarr>-carrname ) > <fs_w>. <fs_w> = strlen( <fs_scarr>-carrname ). ENDIF.
+    IF strlen( <fs_stravelag>-name ) > <fs_w>. <fs_w> = strlen( <fs_stravelag>-name ). ENDIF.
     READ TABLE lt_widths INDEX 4 ASSIGNING <fs_w>.
-    IF strlen( <fs_scarr>-currcode ) > <fs_w>. <fs_w> = strlen( <fs_scarr>-currcode ). ENDIF.
+    IF strlen( <fs_stravelag>-street ) > <fs_w>. <fs_w> = strlen( <fs_stravelag>-street ). ENDIF.
     READ TABLE lt_widths INDEX 5 ASSIGNING <fs_w>.
-    IF strlen( <fs_scarr>-url )      > <fs_w>. <fs_w> = strlen( <fs_scarr>-url ).      ENDIF.
+    IF strlen( <fs_stravelag>-postbox )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-postbox ).      ENDIF.
+    READ TABLE lt_widths INDEX 6 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-postcode )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-postcode ).      ENDIF.
+    READ TABLE lt_widths INDEX 7 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-city )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-city ).      ENDIF.
+    READ TABLE lt_widths INDEX 8 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-country )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-country ).      ENDIF.
+    READ TABLE lt_widths INDEX 9 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-region )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-region ).      ENDIF.
+    READ TABLE lt_widths INDEX 10 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-telephone )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-telephone ).      ENDIF.
+    READ TABLE lt_widths INDEX 11 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-url )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-url ).      ENDIF.
+    READ TABLE lt_widths INDEX 12 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-langu )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-langu ).      ENDIF.
+    READ TABLE lt_widths INDEX 13 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-currency )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-currency ).      ENDIF.
   ENDLOOP.
 
   " 3) 여유분(+2) 더해서 set_width
   DATA: lv_idx TYPE i VALUE 1.
-  DATA(lt_cols) = VALUE string_table( ( |A| ) ( |B| ) ( |C| ) ( |D| ) ( |E| ) ).
+  DATA(lt_cols) = VALUE string_table( ( |A| ) ( |B| ) ( |C| ) ( |D| ) ( |E| ) ( |F| ) ( |G| ) ( |H| ) ( |I| ) ( |J| ) ( |K| ) ( |L| ) ( |M| ) ).
   LOOP AT lt_cols INTO DATA(lv_col).
     READ TABLE lt_widths INDEX lv_idx INTO DATA(lv_w).
     lo_worksheet->get_column( ip_column = lv_col )->set_width( ip_width = lv_w + 2 ).
@@ -530,7 +570,7 @@ TRY.
 
     " === 두 번째 시트 ===
     lo_worksheet2 = lo_excel->add_new_worksheet( ).
-    lo_worksheet2->set_title( ip_title = 'ZSCARR2' ).
+    lo_worksheet2->set_title( ip_title = 'STRAVELAG2' ).
 
     CREATE OBJECT lo_writer TYPE zcl_excel_writer_2007.
     lv_xstring = lo_writer->write_file( lo_excel ).
