@@ -20,13 +20,13 @@ MODULE status_0100 OUTPUT.
     APPEND wa_fcode TO fcode.
 
     SET PF-STATUS '100' EXCLUDING fcode.
-    TITLE = 'ZSCARR 업로드'.
+    TITLE = '테이블 업로드'.
     DESCRIBE TABLE GT_ZSC LINES TLINE.
   ELSEIF r2 = 'X'.
 
     SET PF-STATUS '100'.
-    TITLE = 'ZSCARR 조회 및 편집'.
-    DESCRIBE TABLE GT_ZSCARR LINES TLINE.
+    TITLE = '테이블 조회 및 편집'.
+    DESCRIBE TABLE GT_TABLE LINES TLINE.
   ELSE.
   ENDIF.
   SET TITLEBAR '100' WITH TITLE TLINE.
@@ -39,8 +39,8 @@ ENDMODULE.
 *&
 *&---------------------------------------------------------------------*
 MODULE set_alv_0100 OUTPUT.
-*  IF GO_DOCKING IS INITIAL.
-  IF GO_CUSTOM IS INITIAL.
+  IF GO_DOCKING IS INITIAL.
+*  IF GO_CUSTOM IS INITIAL.
 * OBJECT*INSTANCE 생성
     PERFORM create_object_instance.
 
@@ -57,3 +57,5 @@ MODULE set_alv_0100 OUTPUT.
     PERFORM refresh_data.
   ENDIF.
 ENDMODULE.
+*** INCLUDE Z22W_EX_ZSTRVELAG_001_O01
+*** INCLUDE Z22W_EX_ZSTRVELAG_001_O01

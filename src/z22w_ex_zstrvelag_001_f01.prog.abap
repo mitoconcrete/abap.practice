@@ -197,7 +197,7 @@ FORM upload_from_excel .
                   <lv_field> TYPE any.
 
   "you could find out number of columns dynamically from table <gt_data>
-  lv_numberofcolumns = 5 .
+  lv_numberofcolumns = 13 .
 
   LOOP AT <gt_data> ASSIGNING <ls_data> FROM 2 .
 
@@ -210,18 +210,29 @@ FORM upload_from_excel .
           when 1 .
             gs_EXCEL-MANDT = <lv_field>.
           when 2 .
-            gs_EXCEL-CARRID = <lv_field>.
+            gs_EXCEL-AGENCYNUM = <lv_field>.
           when 3 .
-            gs_EXCEL-CARRNAME = <lv_field>.
+            gs_EXCEL-NAME = <lv_field>.
           when 4 .
-            gs_EXCEL-CURRCODE = <lv_field>.
+            gs_EXCEL-STREET = <lv_field>.
           when 5 .
+            gs_EXCEL-POSTBOX = <lv_field>.
+          when 6 .
+            gs_EXCEL-POSTCODE = <lv_field>.
+          when 7 .
+            gs_EXCEL-CITY = <lv_field>.
+          when 8 .
+            gs_EXCEL-COUNTRY = <lv_field>.
+          when 9 .
+            gs_EXCEL-REGION = <lv_field>.
+          when 10 .
+            gs_EXCEL-TELEPHONE = <lv_field>.
+          when 11 .
             gs_EXCEL-URL = <lv_field>.
-
-*          WHEN 10 .
-*            lv_date_string = <lv_field> .
-*            PERFORM date_convert USING lv_date_string CHANGING lv_target_date_field .
-*            WRITE lv_target_date_field .
+          when 12 .
+            gs_EXCEL-LANGU = <lv_field>.
+          when 13 .
+            gs_EXCEL-CURRENCY = <lv_field>.
           WHEN OTHERS.
 *            WRITE : <lv_field> .
         ENDCASE .
@@ -278,24 +289,13 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM excel_down_smpl .
 * 다운로드 양식 선택
-*    LS_KEY-OBJID = 'ZTEST14_EXCEL01'.
-*    LS_KEY-RELID = 'MI'.
-*
   DATA: FNAME TYPE WWWDATATAB-OBJID.
-  FNAME = 'ZTEST14_EXCEL01'.
+  FNAME = 'STRAVELAG_EXCEL01'.
 * 파일 경로 조회
-*  PERFORM SET_DIRECTORY USING LS_KEY-OBJID.
   PERFORM SET_DIRECTORY.
 
 * 엑셀 다운
-*  PERFORM DOWNLOAD_EXCEL_SMPL USING LS_KEY-OBJID.
   PERFORM DOWNLOAD_EXCEL_SMPL USING FNAME.
-*
-*  IF SY-SUBRC = 0.
-*    MESSAGE '엑셀정상다운' TYPE 'S'.
-*  ELSE.
-*    MESSAGE '엑셀다운에러' TYPE 'S'.
-*  ENDIF.
 ENDFORM.
 *&---------------------------------------------------------------------*
 *& Form SET_DIRECTORY
@@ -388,14 +388,14 @@ FORM download_excel_smpl USING p_fname.
         lv_path        TYPE string,
         lv_fullpath    TYPE string,
         lv_action      TYPE i,
-        lt_scarr       TYPE TABLE OF scarr.
+        lt_stravelag       TYPE TABLE OF stravelag.
 
 TRY.
-    SELECT * FROM scarr INTO TABLE lt_scarr.
+    SELECT * FROM stravelag INTO TABLE lt_stravelag .
 
     CREATE OBJECT lo_excel.
     lo_worksheet = lo_excel->get_active_worksheet( ).
-    lo_worksheet->set_title( ip_title = 'ZSCARR' ).
+    lo_worksheet->set_title( ip_title = 'STRAVELAG' ).
 
     " === 헤더 스타일 ===
     lo_style_hdr = lo_excel->add_new_style( ).
@@ -474,38 +474,54 @@ TRY.
     lo_style_title->alignment->vertical   = zcl_excel_style_alignment=>c_vertical_center.
 
 
-    " === 제목 입력 (A1:E1 병합) ===
-    lo_worksheet->set_cell(
-      ip_column = 'A'
-      ip_row    = 1
-      ip_value  = 'SCARR 테이블 엑셀 샘플양식'
-      ip_style  = lo_style_title->get_guid( ) ).
+*    " === 제목 입력 (A1:E1 병합) ===
+*    lo_worksheet->set_cell(
+*      ip_column = 'A'
+*      ip_row    = 1
+*      ip_value  = 'STRAVELAG 테이블 엑셀 샘플양식'
+*      ip_style  = lo_style_title->get_guid( ) ).
+*
+*    lo_worksheet->set_merge(
+*      ip_column_start = 'A'
+*      ip_column_end   = 'M'
+*      ip_row          = 1 ).
+*
+*    " 제목 행 높이 키우기 (선택)
+*    lo_worksheet->get_row( ip_row = 1 )->set_row_height( ip_row_height = 30 ).
 
-    lo_worksheet->set_merge(
-      ip_column_start = 'A'
-      ip_column_end   = 'E'
-      ip_row          = 1 ).
+    " === 헤더 입력 (1행으로 이동) ===
+    PERFORM fill_cell USING lo_worksheet 1: 1  'MANDT'       lo_style_hdr,
+                                            2  'AGENCYNUM'   lo_style_hdr,
+                                            3  'NAME'        lo_style_hdr,
+                                            4  'STREET'      lo_style_hdr,
+                                            5  'POSTBOX'     lo_style_hdr,
+                                            6  'POSTCODE'    lo_style_hdr,
+                                            7  'CITY'        lo_style_hdr,
+                                            8  'COUNTRY'     lo_style_hdr,
+                                            9  'REGION'      lo_style_hdr,
+                                            10 'TELEPHONE'   lo_style_hdr,
+                                            11 'URL'         lo_style_hdr,
+                                            12 'LANGU'       lo_style_hdr,
+                                            13 'CURRENCY'    lo_style_hdr.
 
-    " 제목 행 높이 키우기 (선택)
-    lo_worksheet->get_row( ip_row = 1 )->set_row_height( ip_row_height = 30 ).
+    " === 데이터 입력 (2행부터) ===
+    DATA: lv_row TYPE i VALUE 2.
+    FIELD-SYMBOLS: <fs_stravelag> LIKE LINE OF lt_stravelag.
 
-    " === 헤더 입력 (2행으로 이동) ===
-    PERFORM fill_cell USING lo_worksheet 3: 1 'MANDT'    lo_style_hdr,
-                                            2 'CARRID'   lo_style_hdr,
-                                            3 'CARRNAME' lo_style_hdr,
-                                            4 'CURRCODE' lo_style_hdr,
-                                            5 'URL'      lo_style_hdr.
-
-    " === 데이터 입력 (3행부터) ===
-    DATA: lv_row TYPE i VALUE 4.
-    FIELD-SYMBOLS: <fs_scarr> LIKE LINE OF lt_scarr.
-
-    LOOP AT lt_scarr ASSIGNING <fs_scarr>.
-      PERFORM fill_cell USING lo_worksheet lv_row: 1 <fs_scarr>-mandt    lo_style_data,
-                                                   2 <fs_scarr>-carrid   lo_style_data,
-                                                   3 <fs_scarr>-carrname lo_style_data,
-                                                   4 <fs_scarr>-currcode lo_style_data,
-                                                   5 <fs_scarr>-url      lo_style_data.
+    LOOP AT lt_stravelag ASSIGNING <fs_stravelag>.
+      PERFORM fill_cell USING lo_worksheet lv_row: 1  <fs_stravelag>-mandt       lo_style_data,
+                                                   2  <fs_stravelag>-agencynum   lo_style_data,
+                                                   3  <fs_stravelag>-name        lo_style_data,
+                                                   4  <fs_stravelag>-street      lo_style_data,
+                                                   5  <fs_stravelag>-postbox     lo_style_data,
+                                                   6  <fs_stravelag>-postcode    lo_style_data,
+                                                   7  <fs_stravelag>-city        lo_style_data,
+                                                   8  <fs_stravelag>-country     lo_style_data,
+                                                   9  <fs_stravelag>-region      lo_style_data,
+                                                   10 <fs_stravelag>-telephone   lo_style_data,
+                                                   11 <fs_stravelag>-url         lo_style_data,
+                                                   12 <fs_stravelag>-langu       lo_style_data,
+                                                   13 <fs_stravelag>-currency    lo_style_data.
       lv_row = lv_row + 1.
     ENDLOOP.
 
@@ -519,30 +535,54 @@ TRY.
   DATA: lt_widths TYPE TABLE OF i WITH DEFAULT KEY.
 
   " 1) 헤더 길이로 초기화
-  APPEND strlen( 'MANDT' )    TO lt_widths.
-  APPEND strlen( 'CARRID' )   TO lt_widths.
-  APPEND strlen( 'CARRNAME' ) TO lt_widths.
-  APPEND strlen( 'CURRCODE' ) TO lt_widths.
-  APPEND strlen( 'URL' )      TO lt_widths.
+  APPEND strlen( 'MANDT' )       TO lt_widths.
+  APPEND strlen( 'AGENCYNUM' )   TO lt_widths.
+  APPEND strlen( 'NAME' )        TO lt_widths.
+  APPEND strlen( 'STREET' )      TO lt_widths.
+  APPEND strlen( 'POSTBOX' )     TO lt_widths.
+  APPEND strlen( 'POSTCODE' )    TO lt_widths.
+  APPEND strlen( 'CITY' )        TO lt_widths.
+  APPEND strlen( 'COUNTRY' )     TO lt_widths.
+  APPEND strlen( 'REGION' )      TO lt_widths.
+  APPEND strlen( 'TELEPHONE' )   TO lt_widths.
+  APPEND strlen( 'URL' )         TO lt_widths.
+  APPEND strlen( 'LANGU' )       TO lt_widths.
+  APPEND strlen( 'CURRENCY' )    TO lt_widths.
 
   " 2) 데이터를 돌면서 최대 길이 갱신
   FIELD-SYMBOLS: <fs_w> TYPE i.
-  LOOP AT lt_scarr ASSIGNING <fs_scarr>.
+  LOOP AT lt_stravelag ASSIGNING <fs_stravelag>.
     READ TABLE lt_widths INDEX 1 ASSIGNING <fs_w>.
-    IF strlen( <fs_scarr>-mandt )    > <fs_w>. <fs_w> = strlen( <fs_scarr>-mandt ).    ENDIF.
+    IF strlen( <fs_stravelag>-mandt )    > <fs_w>. <fs_w> = strlen( <fs_stravelag>-mandt ).    ENDIF.
     READ TABLE lt_widths INDEX 2 ASSIGNING <fs_w>.
-    IF strlen( <fs_scarr>-carrid )   > <fs_w>. <fs_w> = strlen( <fs_scarr>-carrid ).   ENDIF.
+    IF strlen( <fs_stravelag>-agencynum )   > <fs_w>. <fs_w> = strlen( <fs_stravelag>-agencynum ).   ENDIF.
     READ TABLE lt_widths INDEX 3 ASSIGNING <fs_w>.
-    IF strlen( <fs_scarr>-carrname ) > <fs_w>. <fs_w> = strlen( <fs_scarr>-carrname ). ENDIF.
+    IF strlen( <fs_stravelag>-name ) > <fs_w>. <fs_w> = strlen( <fs_stravelag>-name ). ENDIF.
     READ TABLE lt_widths INDEX 4 ASSIGNING <fs_w>.
-    IF strlen( <fs_scarr>-currcode ) > <fs_w>. <fs_w> = strlen( <fs_scarr>-currcode ). ENDIF.
+    IF strlen( <fs_stravelag>-street ) > <fs_w>. <fs_w> = strlen( <fs_stravelag>-street ). ENDIF.
     READ TABLE lt_widths INDEX 5 ASSIGNING <fs_w>.
-    IF strlen( <fs_scarr>-url )      > <fs_w>. <fs_w> = strlen( <fs_scarr>-url ).      ENDIF.
+    IF strlen( <fs_stravelag>-postbox )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-postbox ).      ENDIF.
+    READ TABLE lt_widths INDEX 6 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-postcode )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-postcode ).      ENDIF.
+    READ TABLE lt_widths INDEX 7 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-city )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-city ).      ENDIF.
+    READ TABLE lt_widths INDEX 8 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-country )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-country ).      ENDIF.
+    READ TABLE lt_widths INDEX 9 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-region )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-region ).      ENDIF.
+    READ TABLE lt_widths INDEX 10 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-telephone )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-telephone ).      ENDIF.
+    READ TABLE lt_widths INDEX 11 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-url )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-url ).      ENDIF.
+    READ TABLE lt_widths INDEX 12 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-langu )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-langu ).      ENDIF.
+    READ TABLE lt_widths INDEX 13 ASSIGNING <fs_w>.
+    IF strlen( <fs_stravelag>-currency )      > <fs_w>. <fs_w> = strlen( <fs_stravelag>-currency ).      ENDIF.
   ENDLOOP.
 
   " 3) 여유분(+2) 더해서 set_width
   DATA: lv_idx TYPE i VALUE 1.
-  DATA(lt_cols) = VALUE string_table( ( |A| ) ( |B| ) ( |C| ) ( |D| ) ( |E| ) ).
+  DATA(lt_cols) = VALUE string_table( ( |A| ) ( |B| ) ( |C| ) ( |D| ) ( |E| ) ( |F| ) ( |G| ) ( |H| ) ( |I| ) ( |J| ) ( |K| ) ( |L| ) ( |M| ) ).
   LOOP AT lt_cols INTO DATA(lv_col).
     READ TABLE lt_widths INDEX lv_idx INTO DATA(lv_w).
     lo_worksheet->get_column( ip_column = lv_col )->set_width( ip_width = lv_w + 2 ).
@@ -551,7 +591,7 @@ TRY.
 
     " === 두 번째 시트 ===
     lo_worksheet2 = lo_excel->add_new_worksheet( ).
-    lo_worksheet2->set_title( ip_title = 'ZSCARR2' ).
+    lo_worksheet2->set_title( ip_title = 'STRAVELAG2' ).
 
     CREATE OBJECT lo_writer TYPE zcl_excel_writer_2007.
     lv_xstring = lo_writer->write_file( lo_excel ).
@@ -654,16 +694,13 @@ ENDFORM.
 FORM get_needed_data .
 * 입력 데이터 점검을 위해 사용할 DB 데이터
   SELECT *
-    FROM ZSCARR
-    INTO CORRESPONDING FIELDS OF TABLE GT_ZSCARR.
-    SORT GT_ZSCARR BY CARRID.
+    FROM ZSTRAVELAG
+    INTO CORRESPONDING FIELDS OF TABLE GT_TABLE.
+    SORT GT_TABLE BY AGENCYNUM.
 
   IF r2 = 'X'.
-    it_zscarrcp[] = GT_ZSCARR[].
+    it_cp[] = GT_TABLE[].
   ENDIF.
-*  IF GT_ZSCARR IS NOT INITIAL.
-*    DELETE FROM ZSCARR.
-*  ENDIF.
 ENDFORM.
 *&---------------------------------------------------------------------*
 *& Form GET_ZSC_DATA
@@ -675,32 +712,6 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM get_zsc_data .
 
-*  LOOP AT GT_EXCEL INTO GS_EXCEL.
-*    MOVE-CORRESPONDING GS_EXCEL TO GS_ZSC.
-*
-*    IF GS_ZSC-CARRID IS INITIAL.
-*      GS_ZSC-ZSTATUS = ICON_LED_RED.
-*      GS_ZSC-ZRESULT = '키값이 없습니다'.
-*    ELSE.
-*      SORT GT_ZSCARR BY CARRID.
-*      READ TABLE GT_ZSCARR INTO GS_ZSCARR
-*                           WITH KEY CARRID = GS_ZSC-CARRID
-*                           BINARY SEARCH.
-*      IF SY-SUBRC = 0.
-*         GS_ZSC-ZSTATUS = ICON_LED_RED.
-*         GS_ZSC-ZRESULT = '중복된 키가 있습니다.'.
-*      ENDIF.
-*
-*
-*    ENDIF.
-*
-*    IF GS_ZSC-ZRESULT IS INITIAL.
-*      GS_ZSC-ZSTATUS = ICON_LED_YELLOW.
-*    ENDIF.
-*    APPEND GS_ZSC TO GT_ZSC.
-*    CLEAR: GS_EXCEL, GS_ZSC.
-*  ENDLOOP.
-
 
   DATA: GT_SCURX TYPE TABLE OF SCURX,
         GS_SCURX TYPE          SCURX.
@@ -711,59 +722,19 @@ FORM get_zsc_data .
   LOOP AT GT_EXCEL INTO GS_EXCEL.
     MOVE-CORRESPONDING GS_EXCEL TO GS_ZSC.
 
-IF GS_ZSC-CARRID IS INITIAL.
+    IF GS_ZSC-AGENCYNUM IS INITIAL.
       GS_ZSC-ZSTATUS = ICON_LED_RED.
-      GS_ZSC-ZRESULT = GS_ZSC-ZRESULT && '[CARRID 키값이 없습니다.]'.
-ELSE.
-      SORT GT_ZSCARR BY CARRID.
-      READ TABLE GT_ZSCARR INTO GS_ZSCARR
-                           WITH KEY CARRID = GS_ZSC-CARRID
+      GS_ZSC-ZRESULT = GS_ZSC-ZRESULT && '[AGENCYNUM 키값이 없습니다.]'.
+    ELSE.
+      SORT GT_TABLE BY AGENCYNUM.
+      READ TABLE GT_TABLE INTO GS_TABLE
+                           WITH KEY AGENCYNUM = GS_ZSC-AGENCYNUM
                            BINARY SEARCH.
       IF SY-SUBRC = 0.
-         GS_ZSC-ZSTATUS = ICON_LED_RED.
-         GS_ZSC-ZRESULT = GS_ZSC-ZRESULT && '[CARRID 키값이 이미 들어있습니다.]'.
+        GS_ZSC-ZSTATUS = ICON_LED_RED.
+        GS_ZSC-ZRESULT = GS_ZSC-ZRESULT && '[AGENCYNUM 키값이 이미 들어있습니다.]'.
       ENDIF.
-
-ENDIF.
-
-IF GS_ZSC-CURRCODE IS INITIAL.
-      GS_ZSC-ZSTATUS = ICON_LED_RED.
-      GS_ZSC-ZRESULT = GS_ZSC-ZRESULT && '[CURRCODE 값이 없습니다.]'.
-ELSE.
-      READ TABLE GT_SCURX INTO GS_SCURX
-                           WITH KEY CURRKEY = GS_ZSC-CURRCODE.
-      IF SY-SUBRC <> 0.
-         GS_ZSC-ZSTATUS = ICON_LED_RED.
-         GS_ZSC-ZRESULT = GS_ZSC-ZRESULT && '[CURRCODE에 없는 통화키를 입력했습니다.]'.
-      ENDIF.
-ENDIF.
-
-
-*    IF GS_ZSC-CARRID IS INITIAL.
-*      GS_ZSC-ZSTATUS = ICON_LED_RED.
-*      GS_ZSC-ZRESULT = GS_ZSC-ZRESULT && '[CARRID 키값이 없습니다.]'.
-*
-*    ELSEIF GS_ZSC-CURRCODE IS INITIAL.
-*      GS_ZSC-ZSTATUS = ICON_LED_RED.
-*      GS_ZSC-ZRESULT = GS_ZSC-ZRESULT && '[CURRCODE 값이 없습니다.]'.
-*    ELSE.
-*      READ TABLE GT_SCURX INTO GS_SCURX
-*                           WITH KEY CURRKEY = GS_ZSC-CURRCODE.
-*      IF SY-SUBRC <> 0.
-*         GS_ZSC-ZSTATUS = ICON_LED_RED.
-*         GS_ZSC-ZRESULT = GS_ZSC-ZRESULT && '[CURRCODE에 없는 통화키를 입력했습니다.]'.
-*      ENDIF.
-*
-*      SORT GT_ZSCARR BY CARRID.
-*      READ TABLE GT_ZSCARR INTO GS_ZSCARR
-*                           WITH KEY CARRID = GS_ZSC-CARRID
-*                           BINARY SEARCH.
-*      IF SY-SUBRC = 0.
-*         GS_ZSC-ZSTATUS = ICON_LED_RED.
-*         GS_ZSC-ZRESULT = GS_ZSC-ZRESULT && '[CARRID 키값이 이미 들어있습니다.]'.
-*      ENDIF.
-*
-*    ENDIF.
+    ENDIF.
 
     IF GS_ZSC-ZRESULT IS INITIAL.
       GS_ZSC-ZSTATUS = ICON_LED_YELLOW.
@@ -782,22 +753,22 @@ ENDFORM.
 *& <--  p2        text
 *&---------------------------------------------------------------------*
 FORM create_object_instance .
-*  CREATE OBJECT GO_DOCKING
-*    EXPORTING
-*      SIDE         = CL_GUI_DOCKING_CONTAINER=>DOCK_AT_LEFT
-*      EXTENSION    = 3000.
+  CREATE OBJECT GO_DOCKING
+    EXPORTING
+      SIDE         = CL_GUI_DOCKING_CONTAINER=>DOCK_AT_LEFT
+      EXTENSION    = 3000.
+
+  CREATE OBJECT GO_GRID
+    EXPORTING
+      I_PARENT     = GO_DOCKING.
+
+*CREATE OBJECT GO_CUSTOM
+*  EXPORTING
+*   CONTAINER_NAME = 'CON1'.
 *
-*  CREATE OBJECT GO_GRID
-*    EXPORTING
-*      I_PARENT     = GO_DOCKING.
-
-CREATE OBJECT GO_CUSTOM
-  EXPORTING
-   CONTAINER_NAME = 'CON1'.
-
-CREATE OBJECT GO_GRID
-  EXPORTING
-    I_PARENT = GO_CUSTOM.
+*CREATE OBJECT GO_GRID
+*  EXPORTING
+*    I_PARENT = GO_CUSTOM.
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -823,18 +794,34 @@ FORM set_fildcat .
   CLEAR: GT_FCAT.
 IF r1 = 'X'.
     _FCAT: 'ZSTATUS' '상태' 'X' '' '3' '',
-           'MANDT' '클라이언트' 'X' '' '5' '',
-           'CARRID' '아이디' 'X' '' '5' '',
-           'CARRNAME' '이름' '' '' '20' '',
-           'CURRCODE' '통화' '' '' '5' '',
-           'URL' '사이트' '' '' '30' '',
+           'MANDT' '클라이언트' 'X' '' '3' '',
+           'AGENCYNUM' '여행사번호' 'X' '' '8' '',
+           'NAME' '이름' '' '' '25' '',
+           'STREET' '도로명' '' '' '30' '',
+           'POSTBOX' '우편박스' '' '' '10' '',
+           'POSTCODE' '우편번호' '' '' '10' '',
+           'CITY' '도시' '' '' '25' '',
+           'COUNTRY' '나라코드' '' '' '3' '',
+           'REGION' '지역' '' '' '3' '',
+           'TELEPHONE' '전화번호' '' '' '30' '',
+           'URL' '홈페이지' '' '' '255' '',
+           'LANGU' '언어키' '' '' '1' '',
+           'CURRENCY' '통화단위' '' '' '5' '',
            'ZRESULT' '비고' '' '' '50' ''.
 ELSEIF r2 = 'X'.
-    _FCAT: 'MANDT' '클라이언트' 'X' '' '5' '',
-           'CARRID' '아이디' 'X' '' '5' '',
-           'CARRNAME' '이름' '' 'X' '20' 'X',
-           'CURRCODE' '통화' '' 'X' '5' '',
-           'URL' '사이트' '' 'X' '255' 'X'.
+    _FCAT: 'MANDT' '클라이언트' 'X' '' '3' '',
+           'AGENCYNUM' '여행사번호' 'X' '' '8' '',
+           'NAME' '이름' '' 'X' '25' 'X',
+           'STREET' '도로명' '' 'X' '30' 'X',
+           'POSTBOX' '우편박스' '' 'X' '10' '',
+           'POSTCODE' '우편번호' '' 'X' '10' '',
+           'CITY' '도시' '' 'X' '25' 'X',
+           'COUNTRY' '나라코드' '' 'X' '3' '',
+           'REGION' '지역' '' 'X' '3' '',
+           'TELEPHONE' '전화번호' '' 'X' '30' '',
+           'URL' '홈페이지' '' 'X' '255' 'X',
+           'LANGU' '언어키' '' 'X' '1' '',
+           'CURRENCY' '통화단위' '' 'X' '5' ''.
 ENDIF.
 
 ENDFORM.
@@ -879,7 +866,7 @@ IF r1 ='X'.
     EXPORTING
       IS_LAYOUT                     = GS_LAYOUT
     CHANGING
-      IT_OUTTAB                     = GT_ZSCARR
+      IT_OUTTAB                     = GT_TABLE
       IT_FIELDCATALOG               = GT_FCAT.
 
   CALL METHOD go_grid->set_ready_for_input
@@ -912,26 +899,8 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM save_zsc_data .
     LOOP AT GT_ZSC ASSIGNING FIELD-SYMBOL(<FS_ZSC>).
-      PERFORM SAVE_ZSC_FINAL USING <FS_ZSC>.
+      PERFORM SAVE_ZSC_FINAL CHANGING <FS_ZSC>.
     ENDLOOP.
-
-
-*    LOOP AT GT_ZSC INTO GS_ZSC.
-*     IF GS_ZSC-ZSTATUS = ICON_LED_YELLOW.
-*     MOVE-CORRESPONDING GS_ZSC TO GS_ZSCARR.
-*     GS_ZSCARR-MANDT = SY-MANDT.
-*     INSERT INTO ZSCARR VALUES GS_ZSCARR.
-*
-*     IF SY-SUBRC = 0.
-*         GS_ZSC-ZSTATUS = ICON_LED_GREEN.
-*         GS_ZSC-ZRESULT = '저장 성공'.
-*       COMMIT WORK AND WAIT.
-*       MESSAGE S006.
-*     ELSEIF SY-SUBRC <> 0.
-*       MESSAGE E007.
-*     ENDIF.
-*  ENDIF.
-*    ENDLOOP.
 ENDFORM.
 *&---------------------------------------------------------------------*
 *& Form SAVE_ZSC_FINAL
@@ -940,11 +909,11 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 *&      <-- <FS_ZSC>
 *&---------------------------------------------------------------------*
-FORM save_zsc_final USING VALUE(GS_ZSC) LIKE GS_ZSC.
+FORM save_zsc_final CHANGING GS_ZSC LIKE GS_ZSC.
 IF GS_ZSC-ZSTATUS = ICON_LED_YELLOW.
-     MOVE-CORRESPONDING GS_ZSC TO GS_ZSCARR.
-     GS_ZSCARR-MANDT = SY-MANDT.
-     INSERT INTO ZSCARR VALUES GS_ZSCARR.
+     MOVE-CORRESPONDING GS_ZSC TO GS_TABLE.
+     GS_TABLE-MANDT = SY-MANDT.
+     INSERT INTO ZSTRAVELAG VALUES GS_TABLE.
 
      IF SY-SUBRC = 0.
          GS_ZSC-ZSTATUS = ICON_LED_GREEN.
@@ -969,19 +938,17 @@ ENDFORM.
 FORM del_data .
 * 입력 데이터 점검을 위해 사용할 DB 데이터
   SELECT *
-    FROM ZSCARR
-    INTO CORRESPONDING FIELDS OF TABLE GT_ZSCARR.
+    FROM ZSTRAVELAG
+    INTO CORRESPONDING FIELDS OF TABLE GT_TABLE.
 
-
-  IF GT_ZSCARR IS NOT INITIAL.
-    DELETE FROM ZSCARR.
+  IF GT_TABLE IS NOT INITIAL.
+    DELETE FROM ZSTRAVELAG.
     IF SY-SUBRC = 0.
-     MESSAGE '정상적으로 ZSCARR테이블 데이터가 전체 삭제되었습니다.' TYPE 'S'.
+     MESSAGE '정상적으로 테이블 데이터가 전체 삭제되었습니다.' TYPE 'S'.
     ELSE.
       MESSAGE '데이터 삭제중에 문제가 생겼습니다.' TYPE 'E'.
     ENDIF.
   ELSE.
-*     MESSAGE '데이터 삭제중에 문제가 생겼습니다.' TYPE 'E'.
     MESSAGE '삭제할 데이터가 없습니다.' TYPE 'I'.
   ENDIF.
 
@@ -997,24 +964,6 @@ ENDFORM.
 *& <--  p2        text
 *&---------------------------------------------------------------------*
 FORM save_modify .
-*
-*        IF go_grid->is_ready_for_input( ) = 0.
-*        CALL METHOD go_grid->set_ready_for_input
-*          EXPORTING
-*            i_ready_for_input = 1.
-*
-*      ELSE.
-*        CALL METHOD go_grid->check_changed_data
-*          IMPORTING
-*            e_valid = l_valid.
-*        IF l_valid = 'X'.
-*          CALL METHOD go_grid->set_ready_for_input
-*            EXPORTING
-*              i_ready_for_input = 0.
-*
-*        ENDIF.
-*      ENDIF.
-*
   DATA: l_valid(1) TYPE c.
   CALL METHOD go_grid->check_changed_data
           IMPORTING
@@ -1026,7 +975,7 @@ FORM save_modify .
 *      IF togl = 'X'.
        IF go_grid->is_ready_for_input( ) = 1.
         p_button = 'S'.
-        IF it_zscarrcp[] NE gt_zscarr[].
+        IF it_cp[] NE gt_table[].
           PERFORM popup_confirm USING p_button CHANGING p_confirm.
           IF p_confirm = '1'.
             PERFORM f_save_data.
@@ -1058,57 +1007,25 @@ ENDFORM.
 *& <--  p2        text
 *&---------------------------------------------------------------------*
 FORM f_save_data .
-  DATA: wa_zscarrcp   TYPE zscarr,
-        wa_zscarr_tmp TYPE zscarr.
+  DATA: wa_cp   TYPE zstravelag,
+        wa_tmp  TYPE zstravelag.
 
-  DATA: it_changes TYPE TABLE OF zscarr WITH HEADER LINE.
-  CLEAR it_changes[].
+  LOOP AT gt_table INTO gs_table.
+    READ TABLE it_cp INTO wa_cp INDEX sy-tabix.
+    IF wa_cp NE gs_table.
 
-  READ TABLE gt_zscarr into gs_zscarr WITH KEY carrname = ''.
-  IF sy-subrc = '0'.
-    MESSAGE '입력하지 않은 값이 있습니다.' TYPE 'I'.
-    LEAVE SCREEN.
-  ENDIF.
+      MOVE-CORRESPONDING gs_table TO wa_tmp.
 
-  READ TABLE gt_zscarr into gs_zscarr WITH KEY currcode = ''.
-  IF sy-subrc = '0'.
-    MESSAGE '입력하지 않은 값이 있습니다.' TYPE 'I'.
-    LEAVE SCREEN.
-  ENDIF.
-
-  READ TABLE gt_zscarr into gs_zscarr WITH KEY url = ''.
-  IF sy-subrc = '0'.
-    MESSAGE '입력하지 않은 값이 있습니다.' TYPE 'I'.
-    LEAVE SCREEN.
-  ENDIF.
-
-  DATA : it_scurx TYPE TABLE OF scurx.
-  DATA : wa_scurx TYPE  scurx.
-  SELECT * FROM scurx INTO TABLE it_scurx.
-  LOOP AT gt_zscarr INTO gs_zscarr.
-    READ TABLE it_scurx INTO wa_scurx WITH KEY currkey = gs_zscarr-currcode.
-    IF sy-subrc <> 0.
-      MESSAGE 'CURRCODE에 들어있지 않은 값을 넣었습니다' TYPE 'I'.
-      LEAVE SCREEN.
-    ENDIF.
-  ENDLOOP.
-
-  LOOP AT gt_zscarr INTO gs_zscarr.
-    READ TABLE it_zscarrcp INTO wa_zscarrcp INDEX sy-tabix.
-    IF wa_zscarrcp NE gs_zscarr.
-
-      MOVE-CORRESPONDING gs_zscarr TO wa_zscarr_tmp.
-
-      MODIFY zscarr FROM wa_zscarr_tmp.
+      MODIFY zstravelag FROM wa_tmp.
       IF sy-subrc = 0.
-       APPEND gs_zscarr TO it_changes.
+       APPEND gs_table TO it_changes.
       ELSE.
         MESSAGE '테이블 저장 중 에러가 발생했습니다.' TYPE 'I'.
         LEAVE SCREEN.
       ENDIF.
     ENDIF.
 
-    CLEAR wa_zscarrcp.
+    CLEAR wa_cp.
   ENDLOOP.
 *MESSAGE '데이터가 정상적으로 저장되었습니다.' TYPE 'S'.
   DESCRIBE TABLE it_changes LINES DATA(lines).
@@ -1213,3 +1130,5 @@ FORM column_width USING p_worksheet TYPE REF TO zcl_excel_worksheet
   ENDTRY.
 
 ENDFORM.
+*** INCLUDE Z22W_EX_ZSTRVELAG_001_F01
+*** INCLUDE Z22W_EX_ZSTRVELAG_001_F01
